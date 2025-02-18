@@ -1,0 +1,23 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main  # Runs when changes are pushed to `main`
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: SSH into EC2 and Pull Changes
+      uses: appleboy/ssh-action@master
+      with:
+        host: 3.147.195.250
+        username: ec2-user
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          cd /home/ec2-user/webpage
+          git pull origin main
+          sudo systemctl daemon-reload  # Reloads systemd changes
+          sudo systemctl restart gunicorn  # Restarts the app
