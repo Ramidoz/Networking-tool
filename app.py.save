@@ -1,0 +1,59 @@
+from flask import Flask, request, jsonify, send_from_directory
+import sqlite3
+import os
+
+app = Flask(__name__)
+
+# Define the absolute path to the database
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, 'employees.db')
+
+@app.route('/')
+def index():
+    return send_from_directory('.', 'employee_search.html')
+
+@app.route('/styles.css')
+def styles():
+    return send_from_directory('.', 'styles.css')
+
+@app.route('/script.js')
+def script():
+    return send_from_directory('.', 'script.js')
+
+@app.route('/search')
+def search():
+    query = request.args.get('q', '').lower()
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row  # This allows us to access columns by name
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT unique_contact_id, contact_first_name, primary_last_name, company_name, position 
+        FROM employees 
+        WHERE LOWER(contact_first_name) LIKE ? OR LOWER(primary_last_name) LIKE ?
+    """, ('%' + query + '%', '%' + query + '%'))
+    results = [{'id': row['unique_contact_id'], 
+                'name': f"{row['contact_first_name']} {row['primary_last_name']}", 
+                'company': row['company_name'], 
+                'title': row['position']} for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(results)
+
+@app.route('/employee/<int:id>')
+def employee(id):
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM employees WHERE unique_contact_id = ?", (id,))
+    employee = cursor.fetchone()
+    conn.close()
+    if employee:
+        return jsonify({
+            'id': employee['unique_contact_id'],
+            'name': f"{employee['contact_first_name']} {employee['primary_last_name']}",
+            'company': employee['company_name'],
+            'title': employee['position'],
+        })
+    return jsonify({'error': 'Employee not found'}), 404
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
