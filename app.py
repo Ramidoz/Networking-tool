@@ -86,7 +86,7 @@ def upload_file():
         # Insert data into MySQL RDS
         for _, row in df.iterrows():
             cursor.execute("""
-                INSERT INTO employee_details_db (Contact_First_Name, Primary_Last_Name, Company_Name, Position) 
+                INSERT INTO employee_details_db (`Contact First Name`, `Primary Last Name`, `Company Name`, `Position`) 
                 VALUES (%s, %s, %s, %s)
             """, (row['Contact First Name'], row['Primary Last Name'], row['Company Name'], row['Position']))
 
