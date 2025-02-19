@@ -39,6 +39,10 @@ def get_db_connection():
 def index():
     return send_from_directory('.', 'employee_search.html')
 
+@app.route("/loader.html")
+def loader():
+    return send_from_directory('.', 'loader.html')
+
 @app.route("/script.js")
 def serve_js():
     return send_from_directory('.', 'script.js')
@@ -47,13 +51,9 @@ def serve_js():
 def serve_css():
     return send_from_directory('.', 'styles.css')
 
-@app.route("/loader.html")
-def serve_loader():
-    return send_from_directory('.', 'loader.html')
-
 @app.route("/health")
 def health_check():
-    return "OK", 200  # Health check route
+    return "OK", 200
 
 @app.route("/upload", methods=["POST"])
 def upload_file():
@@ -93,8 +93,7 @@ def upload_file():
         connection.commit()
         connection.close()
 
-        # Optional: Delete the file after processing
-        os.remove(filepath)
+        os.remove(filepath)  # Clean up uploaded file
 
         return jsonify({'message': 'File uploaded and processed successfully'}), 200
 
