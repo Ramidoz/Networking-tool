@@ -47,6 +47,10 @@ def serve_js():
 def serve_css():
     return send_from_directory('.', 'styles.css')
 
+@app.route("/loader.html")
+def serve_loader():
+    return send_from_directory('.', 'loader.html')
+
 @app.route("/health")
 def health_check():
     return "OK", 200  # Health check route
