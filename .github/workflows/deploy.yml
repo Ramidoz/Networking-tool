@@ -1,0 +1,32 @@
+name: Deploy to AWS EC2
+
+on:
+  push:
+    branches:
+      - main  # Trigger on push to main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/obvien.pem
+          chmod 400 ~/.ssh/obvien.pem
+          ssh-keyscan -H 3.147.195.250 >> ~/.ssh/known_hosts
+
+      - name: SSH into AWS and Deploy
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/obvien.pem ec2-user@3.147.195.250 << 'EOF'
+          cd /home/ec2-user/webpage  # Navigate to Obvien project folder
+          git pull origin main  # Pull latest code
+          source venv/bin/activate  # Activate virtual environment
+          pip install -r requirements.txt  # Ensure dependencies are updated
+          sudo systemctl daemon-reload  # Reload systemd for app updates
+          sudo systemctl restart gunicorn  # Restart Gunicorn for new changes
+          EOF
