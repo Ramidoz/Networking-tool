@@ -1,70 +1,44 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Ensure search button event only runs when it exists
-    const searchBtn = document.getElementById("search-btn");
-    if (searchBtn) {
-        searchBtn.addEventListener("click", fetchResults);
+    console.log("JavaScript Loaded Successfully! ✅");
+
+    const uploadForm = document.getElementById("upload-form");
+    const fileInput = document.getElementById("file-input");
+    const uploadStatus = document.getElementById("upload-status");
+
+    if (!uploadForm || !fileInput) {
+        console.error("Upload form or file input is missing!");
+        return;
     }
 
-    function fetchResults() {
-        const firstNameInput = document.getElementById("first-name");
-        const lastNameInput = document.getElementById("last-name");
-        const jobTitleInput = document.getElementById("job-title");
-        const companyNameInput = document.getElementById("company-name");
+    uploadForm.addEventListener("submit", function (event) {
+        event.preventDefault();  // ⛔ Prevent Form Reload
 
-        let queryParams = new URLSearchParams({
-            first_name: firstNameInput ? firstNameInput.value.trim() : "",
-            last_name: lastNameInput ? lastNameInput.value.trim() : "",
-            title: jobTitleInput ? jobTitleInput.value.trim() : "",
-            company: companyNameInput ? companyNameInput.value.trim() : ""
-        });
+        if (fileInput.files.length === 0) {
+            uploadStatus.innerHTML = "<p style='color: red;'>⚠️ Please select a file before uploading.</p>";
+            return;
+        }
 
-        fetch(`/search?${queryParams.toString()}`)
-            .then(res => res.json())
-            .then(data => {
-                const resultsContainer = document.getElementById("results-container");
-                if (resultsContainer) {
-                    resultsContainer.innerHTML = "";
-                    if (data.message) {
-                        resultsContainer.innerHTML = `<p>${data.message}</p>`;
-                        return;
-                    }
-                    data.forEach(employee => {
-                        const resultItem = document.createElement("div");
-                        resultItem.className = "result-item";
-                        resultItem.innerHTML = `
-                            <strong>${employee.name}</strong>
-                            <span class="company-name"><em>${employee.company}</em></span>
-                            <span class="job-title"> | ${employee.title}</span>
-                        `;
-                        resultsContainer.appendChild(resultItem);
-                    });
-                }
-            })
-            .catch(error => console.error("Error fetching search results:", error));
-    }
+        let formData = new FormData();
+        formData.append("file", fileInput.files[0]);
 
-    // Upload functionality
-    const uploadBtn = document.getElementById("upload-btn");
-    if (uploadBtn) {
-        uploadBtn.addEventListener("click", function () {
-            const fileInput = document.getElementById("file-input");
-            if (!fileInput || fileInput.files.length === 0) {
-                alert("Please select a file before uploading.");
-                return;
+        console.log("Uploading file:", fileInput.files[0].name);
+
+        fetch("/upload", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Upload response:", data);
+            if (data.error) {
+                uploadStatus.innerHTML = `<p style='color: red;'>❌ ${data.error}</p>`;
+            } else {
+                uploadStatus.innerHTML = `<p style='color: green;'>✅ ${data.message}</p>`;
             }
-
-            let formData = new FormData();
-            formData.append("file", fileInput.files[0]);
-
-            fetch("/upload", {
-                method: "POST",
-                body: formData
-            })
-                .then(response => response.json())
-                .then(data => {
-                    alert(data.message || data.error);
-                })
-                .catch(error => console.error("Upload failed:", error));
+        })
+        .catch(error => {
+            console.error("Upload failed:", error);
+            uploadStatus.innerHTML = `<p style='color: red;'>❌ Upload failed! Check console.</p>`;
         });
-    }
+    });
 });
