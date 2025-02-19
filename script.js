@@ -1,8 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Ensure search button event only runs when it exists
+    console.log("JavaScript Loaded Successfully!"); // Debugging message
+
     const searchBtn = document.getElementById("search-btn");
     if (searchBtn) {
+        console.log("Search button found");
         searchBtn.addEventListener("click", fetchResults);
+    } else {
+        console.error("Search button NOT found!");
     }
 
     function fetchResults() {
@@ -21,6 +25,7 @@ document.addEventListener("DOMContentLoaded", function () {
         fetch(`/search?${queryParams.toString()}`)
             .then(res => res.json())
             .then(data => {
+                console.log("Search results received:", data);
                 const resultsContainer = document.getElementById("results-container");
                 if (resultsContainer) {
                     resultsContainer.innerHTML = "";
@@ -46,7 +51,10 @@ document.addEventListener("DOMContentLoaded", function () {
     // Upload functionality
     const uploadBtn = document.getElementById("upload-btn");
     if (uploadBtn) {
+        console.log("Upload button found");
         uploadBtn.addEventListener("click", function () {
+            console.log("Upload button clicked!");
+
             const fileInput = document.getElementById("file-input");
             if (!fileInput || fileInput.files.length === 0) {
                 alert("Please select a file before uploading.");
@@ -56,15 +64,20 @@ document.addEventListener("DOMContentLoaded", function () {
             let formData = new FormData();
             formData.append("file", fileInput.files[0]);
 
+            console.log("Uploading file:", fileInput.files[0].name);
+
             fetch("/upload", {
                 method: "POST",
                 body: formData
             })
                 .then(response => response.json())
                 .then(data => {
+                    console.log("Upload response:", data);
                     alert(data.message || data.error);
                 })
                 .catch(error => console.error("Upload failed:", error));
         });
+    } else {
+        console.error("Upload button NOT found!");
     }
 });
