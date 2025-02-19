@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory
 import pymysql
+import pandas as pd
 import os
 import logging
 
@@ -15,6 +16,10 @@ DB_PORT = int(os.getenv('DB_PORT', 3306))
 DB_USER = os.getenv('DB_USER', 'admin')
 DB_PASS = os.getenv('DB_PASS', '12345678')
 DB_NAME = os.getenv('DB_NAME', 'obviendb')
+
+UPLOAD_FOLDER = "uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 def get_db_connection():
     try:
@@ -41,6 +46,56 @@ def serve_js():
 @app.route("/styles.css")
 def serve_css():
     return send_from_directory('.', 'styles.css')
+
+@app.route("/health")
+def health_check():
+    return "OK", 200  # Health check route
+
+@app.route("/upload", methods=["POST"])
+def upload_file():
+    """Handles file uploads and inserts data into MySQL RDS."""
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+    file.save(filepath)  # Save the file temporarily
+
+    try:
+        # Read Excel file using pandas
+        df = pd.read_excel(filepath)
+
+        # Validate required columns (must match database)
+        required_columns = {'Contact First Name', 'Primary Last Name', 'Company Name', 'Position'}
+        if not required_columns.issubset(df.columns):
+            return jsonify({'error': 'Invalid file format. Missing required columns.'}), 400
+
+        connection = get_db_connection()
+        if connection is None:
+            return jsonify({'error': 'Database connection failed'}), 500
+
+        cursor = connection.cursor()
+
+        # Insert data into MySQL RDS
+        for _, row in df.iterrows():
+            cursor.execute("""
+                INSERT INTO employee_details_db (Contact_First_Name, Primary_Last_Name, Company_Name, Position) 
+                VALUES (%s, %s, %s, %s)
+            """, (row['Contact First Name'], row['Primary Last Name'], row['Company Name'], row['Position']))
+
+        connection.commit()
+        connection.close()
+
+        # Optional: Delete the file after processing
+        os.remove(filepath)
+
+        return jsonify({'message': 'File uploaded and processed successfully'}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route("/search")
 def search():

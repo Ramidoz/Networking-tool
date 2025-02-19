@@ -100,3 +100,61 @@ button:hover {
     color: #7f8c8d;
     font-size: 14px;
 }
+
+/* Upload Section Styling */
+.upload-container {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f4f4f4;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.upload-container input[type="file"] {
+    display: block;
+    margin: 10px auto;
+    padding: 10px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    background: #fff;
+}
+
+.upload-container button {
+    background: #28a745;
+}
+
+.upload-container button:hover {
+    background: #218838;
+}
+
+/* Status Messages */
+.success {
+    color: green;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.error {
+    color: red;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+/* Back Button */
+.back-link {
+    margin-top: 20px;
+}
+
+.back-link .button {
+    display: inline-block;
+    padding: 10px 15px;
+    font-size: 16px;
+    color: white;
+    background: #6c757d;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.back-link .button:hover {
+    background: #5a6268;
+}
