@@ -101,22 +101,3 @@ button:hover {
     font-size: 14px;
 }
 
-.loader-link {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.loader-link .button {
-    display: inline-block;
-    padding: 10px 20px;
-    font-size: 18px;
-    color: white;
-    background-color: #3498db;
-    border-radius: 5px;
-    text-decoration: none;
-    transition: background 0.3s ease;
-}
-
-.loader-link .button:hover {
-    background-color: #2980b9;
-}
